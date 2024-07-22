@@ -1,0 +1,13 @@
+{
+    "version": 1,
+    "defaults": {
+        "build": {
+            "packtool": "mops sources",
+            "args": ""
+        },
+        "replica": {
+          "subnet_type": "system"
+      }
+    }
+    
+}
