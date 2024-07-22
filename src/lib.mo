@@ -44,7 +44,6 @@ module {
         environment: ICRC85Environment;
         cycles: Nat;
         actions: Nat;
-        report_period: Nat;
         namespace: Text;
         schedule: <system>(Nat) -> async* ()
       }) : async* (){
