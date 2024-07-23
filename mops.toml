@@ -9,5 +9,5 @@ fuzz = "0.2.1"
 name = "ovs-fixed"
 version = "0.1.1"
 description = "An OVS scheme for a fixed cycles donation"
-repository = "https://github.com/icdevsorg/ovs-fixed.mo"
+repository = "https://github.com/icdevsorg/ovs-fixed"
 keywords = ["open value sharing","cycles"]
