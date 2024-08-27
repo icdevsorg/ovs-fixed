@@ -24,7 +24,6 @@ module {
       #Int : Int;
       #Map : Map;
       #Nat : Nat;
-      #Nat64 : Nat64;
       #Blob : Blob;
       #Text : Text;
       #Array : [Value];
