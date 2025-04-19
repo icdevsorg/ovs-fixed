@@ -4,6 +4,15 @@ import Cycles "mo:base/ExperimentalCycles";
 import Error "mo:base/Error";
 import D "mo:base/Debug";
 import Principal "mo:base/Principal";
+import Int "mo:base/Int";
+import Nat "mo:base/Nat";
+import Blob "mo:base/Blob";
+import Time "mo:base/Time";
+import Timer "mo:base/Timer";
+import TimerTool "mo:timer-tool";
+import Map "mo:map/Map";
+import Star "mo:star/star";
+
 
 module {
 
@@ -19,6 +28,12 @@ module {
     let COLLECTOR = "q26le-iqaaa-aaaam-actsa-cai";
 
     public type Map = [(Text, Value)];
+
+    public type ICRC85State = {
+      var nextCycleActionId: ?Nat;
+      var lastActionReported: ?Nat;
+      var activeActions: Nat;
+    };
 
     public type Value = {
       #Int : Int;
@@ -37,6 +52,100 @@ module {
       platform: ?Text;
       tree: ?[Text];
       collector: ?Principal;
+    };
+
+    private func getDelayedFunc<system>( args: {
+          icrc_85_state: ICRC85State;
+          tt: TimerTool.TimerTool;
+          namespace: Text;
+        }) : (() -> async()) {
+        
+        let afunc = func<system>() : async () {
+            scheduleCycleShare<system>(
+              args.icrc_85_state,
+              args.tt,
+              args.namespace
+            )
+          };
+        return afunc;
+    };
+
+    public func initialize_cycleShare<system>({
+      namespace: Text;
+      icrc_85_state: ICRC85State;
+      wait: ?Nat;
+      tt: TimerTool.TimerTool;
+      handler: TimerTool.ExecutionAsyncHandler
+    }) : () {
+      ignore Timer.setTimer<system>(#nanoseconds(switch(wait){
+        case(?val) val;
+        case(null) OneDay;
+      }), getDelayedFunc<system>({
+        icrc_85_state = icrc_85_state;
+        tt = tt;
+        namespace = namespace;
+      }));
+      tt.registerExecutionListenerAsync(?namespace, handler);
+    };
+
+    public func scheduleCycleShare<system>(icrc_85_state: ICRC85State, tt: TimerTool.TimerTool, namespace: Text) : () {
+      switch (icrc_85_state.nextCycleActionId) {
+        case (?val) {
+          switch (Map.get(tt.getState().actionIdIndex, Map.nhash, val)) {
+            case (?time) { return };
+            case (null) {};
+          };
+        };
+        case (null) {};
+      };
+      let result = tt.setActionSync<system>(Int.abs(Time.now()), ({
+        actionType = namespace;
+        params = Blob.fromArray([]);
+      }));
+      icrc_85_state.nextCycleActionId := ?result.id;
+    };
+
+    public func standardShareCycles<system>(args: {
+      icrc_85_state: ICRC85State;
+      icrc_85_environment: ICRC85Environment;
+      tt: TimerTool.TimerTool;
+      timerNamespace: Text;
+      paymentNamespace: Text;
+      baseCycles: Nat;
+      actionDivisor: Nat;
+      actionMultiplier: Nat;
+      maxCycles: Nat;
+    }) : async* () {
+      let lastReportId = switch (args.icrc_85_state.lastActionReported) {
+        case (?val) val; case (null) 0;
+      };
+      let actions = if (args.icrc_85_state.activeActions > 0) args.icrc_85_state.activeActions else 1;
+      args.icrc_85_state.activeActions := 0;
+      var cyclesToShare = args.baseCycles; // .2 XDR
+      if (actions > 0) {
+        let additional = Nat.div(actions, args.actionDivisor);
+        cyclesToShare := cyclesToShare + (additional * args.actionMultiplier);
+        if (cyclesToShare > args.maxCycles) cyclesToShare := args.maxCycles;
+      };
+      try {
+        await* shareCycles<system>({
+          environment = args.icrc_85_environment;
+          namespace = args.paymentNamespace;
+          actions = actions;
+          schedule = func <system>(period: Nat) : async* () {
+            let result = args.tt.setActionSync<system>(Int.abs(Time.now()) + period, {
+              actionType = args.timerNamespace;
+              params = Blob.fromArray([]);
+            });
+            args.icrc_85_state.nextCycleActionId := ?result.id;
+          };
+          cycles = cyclesToShare;
+        });
+        args.icrc_85_state.lastActionReported := ?Int.abs(Time.now());
+      } catch (e) {
+        args.icrc_85_state.activeActions := actions;
+        D.print("Error occurred during shareCycles: " # Error.message(e));
+      };
     };
 
     public func shareCycles<system>(request: {

@@ -12,14 +12,7 @@ This project implements an Open Value Sharing (OVS) strategy that facilitates th
 
 ## Dependencies
 
-The module depends on several base libraries:
-
-- `Array`
-- `Buffer`
-- `Cycles`
-- `Error`
-- `Debug`
-- `Principal`
+Dependencies can be found in the mops.toml file.
 
 ## Usage
 
@@ -35,35 +28,84 @@ The environment configuration is specified using the `ICRC85Environment` type, w
 - `tree`: An optional array of text values.
 - `collector`: The principal identifier of the cycle collector (default is `COLLECTOR`).
 
+### State configuration
+
+This library assumes you are tracking ICRC85 state in the following format:
+
+```motoko
+    public type ICRC85State = {
+      var nextCycleActionId: ?Nat; //next timer action Id
+      var lastActionReported: ?Nat; //last report of cycles
+      var activeActions: Nat; //number of active actions used to report with
+    };
+```
+
 ### Sharing Cycles
 
 The `shareCycles` function initiates the cycle-sharing process based on the provided request. The request includes the environment configuration, the number of cycles to share, the number of actions, the reporting period, a namespace, and a scheduling function.
 
 #### Example Usage
 
+If you use the Class Plus patter we suggest using the following function in your class Initialization function to trigger the initial cycle share:
+
 ```motoko
-import Principal "mo:base/Principal";
 
-let environment : ICRC85Environment = ?{
-  kill_switch = null;
-  handler = null;
-  period = ?(86_400_000_000_000); // 1 day
-  asset = ;
-  platform = ;
-  tree = null;
-  collector = ?Principal.fromText("q26le-iqaaa-aaaam-actsa-cai");
-};
+public let ICRC85_Timer_Namespace = "icrc85:ovs:shareaction:your_class";
+public let ICRC85_Payment_Namespace = "com.your_com.libraries.your_class";
 
-await shareCycles({
-  environment = environment;
-  cycles = 1_000_000_000;
-  actions = 100;
-  report_period = 86_400_000_000_000;
-  namespace = "example";
-  schedule = func (interval: Nat) : async* () {
-    // Custom scheduling logic
+
+public func Init<system>(config : {
+    manager: ClassPlusLib.ClassPlusInitializationManager;
+    initialState: State;
+    args : ?InitArgs;
+    pullEnvironment : ?(() -> Environment);
+    onInitialize: ?(YourClass -> async*());
+    onStorageChange : ((State) ->())
+  }) : () -> YourClass {
+
+    let instance = ClassPlusLib.ClassPlus<system,
+      YourClass,
+      State,
+      InitArgs,
+      Environment>({config with constructor = Local_log}).get;
+
+    ovsfixed.initialize_cycleShare<system>({
+      namespace = ICRC85_Timer_Namespace;
+      icrc_85_state = instance().getState().icrc85;
+      wait = null;
+      tt = instance().environment.tt;
+      handler = instance().handleIcrc85Action;
+    });
+    
+    instance;
   };
-});
+```
+
+And then in your main class body you need the ICRC85 action handler:
+
+```
+////////// ICRC85 OVS cycle sharing pattern /////////
+
+  public func handleIcrc85Action<system>(id: TT.ActionId, action: TT.Action) : async* Star.Star<TT.ActionId, TT.Error> {
+      switch (action.actionType) {
+        case (ICRC85_Timer_Namespace) {
+          await* ovsfixed.standardShareCycles({
+            icrc_85_state = state.icrc85;
+            icrc_85_environment = do?{environment.advanced!.icrc85!};
+            tt = environment.tt;
+            timerNamespace = ICRC85_Timer_Namespace;
+            paymentNamespace = ICRC85_Payment_Namespace;
+            baseCycles = 200_000_000_000; // .2 XDR
+            maxCycles = 1_000_000_000_000; // 1 XDR
+            actionDivisor = 10000;
+            actionMultiplier = 200_000_000_000; // .2 XDR
+          });
+          #awaited(id);
+        };
+        case (_) #trappable(id);
+      };
+    };
+
 ```
 
 ### Debugging
@@ -83,4 +125,4 @@ Currently the module cannot share more than 1,000 T cycles per period.
 
 This project is licensed under the MIT License. See the LICENSE file for details.
 
-This library was incentivized by [ICDevs](https://ICDevs.org). If you use this library and gain value from it, please consider a [donation](https://icdevs.org/donations.html) to ICDevs.
+This library was built by [ICDevs](https://ICDevs.org). If you use this library and gain value from it, please consider a [donation](https://icdevs.org/donations.html) to ICDevs.
