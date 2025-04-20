@@ -9,7 +9,7 @@ fuzz = "0.2.1"
 
 [package]
 name = "ovs-fixed"
-version = "0.1.3"
+version = "0.1.4"
 description = "An OVS scheme for a fixed cycles donation"
 repository = "https://github.com/icdevsorg/ovs-fixed"
 keywords = [ "open-value-sharing", "cycles" ]

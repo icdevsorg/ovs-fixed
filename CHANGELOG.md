@@ -1,7 +1,11 @@
-#v0.1.3
+# v0.1.4
 
--Added helper functions and class plus helpers
+- Removed Circular Reference
 
-#v0.1.2
+# v0.1.3
 
--Removed #Nat64 from Value
+- Added helper functions and class plus helpers
+
+# v0.1.2
+
+- Removed #Nat64 from Value
