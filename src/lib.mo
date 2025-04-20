@@ -9,10 +9,8 @@ import Nat "mo:base/Nat";
 import Blob "mo:base/Blob";
 import Time "mo:base/Time";
 import Timer "mo:base/Timer";
-import TimerTool "mo:timer-tool";
 import Map "mo:map/Map";
 import Star "mo:star/star";
-
 
 module {
 
@@ -56,49 +54,78 @@ module {
 
     private func getDelayedFunc<system>( args: {
           icrc_85_state: ICRC85State;
-          tt: TimerTool.TimerTool;
+          existingIndex: Map.Map<Nat, Nat>;
+          scheduleActionSync: (<system>(Nat, {actionType: Text; params: Blob}) -> ActionId);
           namespace: Text;
         }) : (() -> async()) {
         
         let afunc = func<system>() : async () {
             scheduleCycleShare<system>(
               args.icrc_85_state,
-              args.tt,
+              args.existingIndex,
+              args.scheduleActionSync,
               args.namespace
             )
           };
         return afunc;
     };
 
+    public type ActionId = {
+      time: Nat;
+      id: Nat;
+    };
+
+    public type Action = {
+      actionType: Text;
+      params: Blob;
+      aSync: ?Nat; //timeout
+      retries: Nat;
+    };
+
+    public type Error = {
+      error_code : Nat;
+      message : Text;
+    };
+
+    public type ExecutionAsyncHandler = (<system>(ActionId, Action) -> async* Star.Star<ActionId,Error>);
+
     public func initialize_cycleShare<system>({
       namespace: Text;
       icrc_85_state: ICRC85State;
       wait: ?Nat;
-      tt: TimerTool.TimerTool;
-      handler: TimerTool.ExecutionAsyncHandler
+      existingIndex: Map.Map<Nat, Nat>;
+      setActionSync: (<system>(Nat, {actionType: Text; params: Blob}) -> ActionId);
+      registerExecutionListenerAsync: ((namespace: ?Text, handler: ExecutionAsyncHandler) -> ());
+      handler: ExecutionAsyncHandler
     }) : () {
+
       ignore Timer.setTimer<system>(#nanoseconds(switch(wait){
         case(?val) val;
         case(null) OneDay;
       }), getDelayedFunc<system>({
         icrc_85_state = icrc_85_state;
-        tt = tt;
+        existingIndex = existingIndex;
+        scheduleActionSync = setActionSync;
         namespace = namespace;
       }));
-      tt.registerExecutionListenerAsync(?namespace, handler);
+      registerExecutionListenerAsync(?namespace, handler);
     };
 
-    public func scheduleCycleShare<system>(icrc_85_state: ICRC85State, tt: TimerTool.TimerTool, namespace: Text) : () {
+    public func scheduleCycleShare<system>(
+      icrc_85_state: ICRC85State,
+      existingIndex : Map.Map<Nat, Nat>,
+      setActionSync: (<system>(Nat, {actionType: Text; params: Blob}) -> ActionId),
+      namespace: Text) : () {
       switch (icrc_85_state.nextCycleActionId) {
         case (?val) {
-          switch (Map.get(tt.getState().actionIdIndex, Map.nhash, val)) {
+          switch (Map.get(existingIndex, Map.nhash, val)) {
             case (?time) { return };
             case (null) {};
           };
         };
         case (null) {};
       };
-      let result = tt.setActionSync<system>(Int.abs(Time.now()), ({
+      let result = setActionSync<system>(Int.abs(Time.now()), ({
         actionType = namespace;
         params = Blob.fromArray([]);
       }));
@@ -108,7 +135,7 @@ module {
     public func standardShareCycles<system>(args: {
       icrc_85_state: ICRC85State;
       icrc_85_environment: ICRC85Environment;
-      tt: TimerTool.TimerTool;
+      setActionSync: (<system>(Nat, {actionType: Text; params: Blob}) -> ActionId);
       timerNamespace: Text;
       paymentNamespace: Text;
       baseCycles: Nat;
@@ -133,7 +160,7 @@ module {
           namespace = args.paymentNamespace;
           actions = actions;
           schedule = func <system>(period: Nat) : async* () {
-            let result = args.tt.setActionSync<system>(Int.abs(Time.now()) + period, {
+            let result = args.setActionSync<system>(Int.abs(Time.now()) + period, {
               actionType = args.timerNamespace;
               params = Blob.fromArray([]);
             });

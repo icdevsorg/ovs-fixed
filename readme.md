@@ -73,7 +73,9 @@ public func Init<system>(config : {
       namespace = ICRC85_Timer_Namespace;
       icrc_85_state = instance().getState().icrc85;
       wait = null;
-      tt = instance().environment.tt;
+      registerExecutionListenerAsync = instance().environment.tt.registerExecutionListenerAsync;
+      setActionSync = instance().environment.tt.setActionSync;  
+      existingIndex = instance().environment.tt.getState().actionIdIndex;
       handler = instance().handleIcrc85Action;
     });
     
@@ -92,7 +94,7 @@ And then in your main class body you need the ICRC85 action handler:
           await* ovsfixed.standardShareCycles({
             icrc_85_state = state.icrc85;
             icrc_85_environment = do?{environment.advanced!.icrc85!};
-            tt = environment.tt;
+            setActionSync = environment.tt.setActionSync;
             timerNamespace = ICRC85_Timer_Namespace;
             paymentNamespace = ICRC85_Payment_Namespace;
             baseCycles = 200_000_000_000; // .2 XDR
