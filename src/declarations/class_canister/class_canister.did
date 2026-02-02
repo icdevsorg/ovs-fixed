@@ -1,0 +1,45 @@
+type TimerId = nat;
+type Time = nat;
+type Stats = 
+ record {
+   cycles: nat;
+   expectedExecutionTime: opt Time;
+   lastExecutionTime: Time;
+   maxExecutions: nat;
+   minAction: opt ActionDetail;
+   nextActionId: nat;
+   nextTimer: opt TimerId;
+   timers: nat;
+ };
+type OVSStats = 
+ record {
+   activeActions: nat;
+   lastActionReported: opt nat;
+   nextCycleActionId: opt nat;
+   timerToolStats: opt Stats;
+ };
+type ClassCanister = 
+ service {
+   getStats: () -> (OVSStats) query;
+   manualInit: () -> ();
+   setCollector: (p: principal) -> ();
+   triggerInfo: () -> ();
+ };
+type ActionId = 
+ record {
+   id: nat;
+   time: Time;
+ };
+type ActionDetail = 
+ record {
+   ActionId;
+   Action;
+ };
+type Action = 
+ record {
+   aSync: opt nat;
+   actionType: text;
+   params: blob;
+   retries: nat;
+ };
+service : () -> ClassCanister

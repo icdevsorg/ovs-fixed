@@ -1,0 +1,24 @@
+type ShareNotification = 
+ record {
+   actions: nat;
+   caller: principal;
+   cycles_received: nat;
+   namespace: text;
+   timestamp: int;
+ };
+type ShareArgs = 
+ vec record {
+       text;
+       nat;
+     };
+type DummyCollector = 
+ service {
+   getStats: () ->
+    (record {
+       count: nat;
+       logs: vec ShareNotification;
+       total_cycles: nat;
+     }) query;
+   icrc85_deposit_cycles_notify: (request: ShareArgs) -> ();
+ };
+service : () -> DummyCollector

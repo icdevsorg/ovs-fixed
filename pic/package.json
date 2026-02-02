@@ -1,0 +1,18 @@
+{
+  "name": "ovs-fixed-pic-tests",
+  "version": "1.0.0",
+  "description": "PocketIC tests for OVS Fixed",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@dfinity/agent": "^2.0.0",
+    "@dfinity/candid": "^2.0.0",
+    "@dfinity/principal": "^2.0.0",
+    "@dfinity/pic": "^0.17.2",
+    "typescript": "^5.0.0",
+    "vitest": "^2.0.0"
+  }
+}

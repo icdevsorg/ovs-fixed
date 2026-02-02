@@ -1,15 +1,21 @@
 [dependencies]
+core = "2.0.0"
 base = "0.14.4"
 star = "0.1.1"
 map = "9.0.1"
+timer-tool = "../../../PanIndustrial/code/timerTool"
+class-plus = "../../../ICDevs/projects/ClassPlus"
 
 [dev-dependencies]
-test = "1.2.0"
+test = "2.0.0"
 fuzz = "0.2.1"
 
 [package]
 name = "ovs-fixed"
-version = "0.1.4"
-description = "An OVS scheme for a fixed cycles donation"
+version = "0.2.0"
+description = "An OVS scheme for a fixed cycles donation with optional mixin support"
 repository = "https://github.com/icdevsorg/ovs-fixed"
-keywords = [ "open-value-sharing", "cycles" ]
+keywords = [ "open-value-sharing", "cycles", "mixin" ]
+
+[toolchain]
+moc = "1.1.0"

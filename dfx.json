@@ -1,13 +1,26 @@
 {
-    "version": 1,
+    "canisters": {
+        "dummy_collector": {
+            "main": "src/examples/DummyCollector.mo",
+            "type": "motoko"
+        },
+        "mixin_canister": {
+            "main": "src/examples/MixinCanister.mo",
+            "type": "motoko"
+        },
+        "class_canister": {
+            "main": "src/examples/ClassCanister.mo",
+            "type": "motoko"
+        }
+    },
     "defaults": {
         "build": {
-            "packtool": "mops sources",
-            "args": ""
+            "args": "",
+            "packtool": "mops sources"
         },
         "replica": {
-          "subnet_type": "system"
-      }
-    }
-    
+            "subnet_type": "system"
+        }
+    },
+    "version": 1
 }
