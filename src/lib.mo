@@ -1,7 +1,6 @@
 import Array "mo:core/Array";
 import List "mo:core/List";
 import Cycles "mo:core/Cycles";
-import ExperimentalCycles "mo:base/ExperimentalCycles";
 import Error "mo:core/Error";
 import Debug "mo:core/Debug";
 import Principal "mo:core/Principal";
@@ -11,7 +10,6 @@ import Runtime "mo:core/Runtime";
 import Blob "mo:core/Blob";
 import Time "mo:core/Time";
 import Timer "mo:core/Timer";
-import Map "mo:map/Map";
 import Star "mo:star/star";
 import TT "mo:timer-tool";
 import ClassPlusLib "mo:class-plus";

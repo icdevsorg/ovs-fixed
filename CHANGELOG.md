@@ -1,3 +1,10 @@
+# v0.2.0
+
+- Upgraded to core
+- Upgraded to timer-tool 0.2.0
+- Added mixin
+- Probable breaking changes
+
 # v0.1.4
 
 - Removed Circular Reference

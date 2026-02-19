@@ -1,10 +1,8 @@
 [dependencies]
 core = "2.0.0"
-base = "0.14.4"
 star = "0.1.1"
-map = "9.0.1"
-timer-tool = "../../../PanIndustrial/code/timerTool"
-class-plus = "../../../ICDevs/projects/ClassPlus"
+timer-tool = "0.2.0"
+class-plus = "0.2.0"
 
 [dev-dependencies]
 test = "2.0.0"

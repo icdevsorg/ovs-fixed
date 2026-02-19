@@ -1,9 +1,9 @@
 // Dummy Collector for tests
 import Cycles "mo:core/Cycles";
-import Array "mo:base/Array";
-import D "mo:base/Debug";
-import Principal "mo:base/Principal";
-import Time "mo:base/Time";
+import Array "mo:core/Array";
+import D "mo:core/Debug";
+import Principal "mo:core/Principal";
+import Time "mo:core/Time";
 
 shared persistent actor class DummyCollector() = this {
 
@@ -36,11 +36,18 @@ shared persistent actor class DummyCollector() = this {
       }
     });
     
-    notifications := Array.append(notifications, newNotifications);
+    notifications := append(notifications, newNotifications);
     total_cycles_received += accepted;
     total_notifications += 1;
     
     D.print("Accepted cycles: " # debug_show(accepted));
+  };
+
+  private func append<A>(xs : [A], ys : [A]) : [A] {
+      let size = xs.size() + ys.size();
+      Array.tabulate<A>(size, func(i) {
+        if (i < xs.size()) xs[i] else ys[i - xs.size()]
+      })
   };
   
   public query func getStats() : async { total_cycles: Nat; count: Nat; logs: [ShareNotification] } {
