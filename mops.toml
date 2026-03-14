@@ -1,5 +1,5 @@
 [dependencies]
-core = "2.0.0"
+core = "2.1.0"
 star = "0.1.1"
 timer-tool = "0.2.1"
 class-plus = "0.2.1"
@@ -10,7 +10,7 @@ fuzz = "0.2.1"
 
 [package]
 name = "ovs-fixed"
-version = "0.2.1"
+version = "0.2.2"
 description = "An OVS scheme for a fixed cycles donation with optional mixin support"
 repository = "https://github.com/icdevsorg/ovs-fixed"
 keywords = [ "open-value-sharing", "cycles", "mixin" ]
