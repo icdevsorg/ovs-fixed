@@ -1,3 +1,7 @@
+# v0.2.2
+
+- quick ref fix
+
 # v0.2.1
 
 - Upgraded to core 2.1.0
